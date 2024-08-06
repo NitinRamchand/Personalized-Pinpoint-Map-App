@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Flask with gmaps</title>
+  <style>
+    #map-canvas {
+      height: 500px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map-canvas">
+  </div>
+  <script>
+    const poiarray = JSON.parse('{{ poidata | tojson | safe}}');
+
+    fillMapItems = (elements, map) => {
+      const bounds = new google.maps.LatLngBounds();
+      elements.forEach((item, index) => {
+        const marker = new google.maps.Marker({ position: new google.maps.LatLng(item[0], item[1]), title: item[2], map: map });
+        bounds.extend(marker.position);
+
+        // Create a clickable infowindow with additional fields
+        const infowindow = new google.maps.InfoWindow();
+        marker.addListener('click', () => {
+          infowindow.setContent(`
+            <div>
+              <strong>${item[2]}</strong><br>
+              ${item[3]}<br>
+              Phone Number: ${item[4]}<br>
+              Email Address: ${item[5]}<br>
+              CICO Business: ${item[6]}<br>
+              Number Transactions: ${item[7]}
+            </div>
+          `);
+          infowindow.open(map, marker);
+        });
+      });
+      map.fitBounds(bounds);
+    }
+    window.showMap = () => {
+      const map = new google.maps.Map(document.getElementById('map-canvas'));
+      fillMapItems(poiarray, map)
+    }
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ context.key }}&callback=showMap">
+  </script>
+</body>
+
+</html>
